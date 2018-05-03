@@ -79,8 +79,8 @@ typedef struct texture_object {
   VkImageLayout imageLayout;
   VkDeviceMemory mem;
   VkImageView view;
-  int32_t tex_width;
-  int32_t tex_height;
+  uint32_t tex_width;
+  uint32_t tex_height;
 } texture_object;
 static const VkFormat kTexFmt = VK_FORMAT_R8G8B8A8_UNORM;
 #define TUTORIAL_TEXTURE_COUNT 1
@@ -376,10 +376,10 @@ VkResult AllocateMemoryTypeFromProperties(uint32_t typeBits,
 
 VkResult LoadTextureFromFile(const char* filePath,
                              struct texture_object* tex_obj,
-                             VkImageUsageFlags usage, VkFlags required_props) {
-  if (!(usage | required_props)) {
+                             VkFlags required_props) {
+  if (!required_props) {
     __android_log_print(ANDROID_LOG_ERROR, "tutorial texture",
-                        "No usage and required_pros");
+                        "No required_pros");
     return VK_ERROR_FORMAT_NOT_SUPPORTED;
   }
 
@@ -418,8 +418,7 @@ VkResult LoadTextureFromFile(const char* filePath,
       .pNext = nullptr,
       .imageType = VK_IMAGE_TYPE_2D,
       .format = kTexFmt,
-      .extent = {static_cast<uint32_t>(imgWidth),
-                 static_cast<uint32_t>(imgHeight), 1},
+      .extent = {imgWidth, imgHeight, 1},
       .mipLevels = 1,
       .arrayLayers = 1,
       .samples = VK_SAMPLE_COUNT_1_BIT,
@@ -462,9 +461,9 @@ VkResult LoadTextureFromFile(const char* filePath,
     CALL_VK(vkMapMemory(device.device_, tex_obj->mem, 0,
                         mem_alloc.allocationSize, 0, &data));
 
-    for (int32_t y = 0; y < imgHeight; y++) {
+    for (uint32_t y = 0; y < imgHeight; y++) {
       unsigned char* row = (unsigned char*)((char*)data + layout.rowPitch * y);
-      for (int32_t x = 0; x < imgWidth; x++) {
+      for (uint32_t x = 0; x < imgWidth; x++) {
         row[x * 4] = imageData[(x + y * imgWidth) * 4];
         row[x * 4 + 1] = imageData[(x + y * imgWidth) * 4 + 1];
         row[x * 4 + 2] = imageData[(x + y * imgWidth) * 4 + 2];
@@ -611,8 +610,7 @@ VkResult LoadTextureFromFile(const char* filePath,
 
 void CreateTexture(void) {
   for (uint32_t i = 0; i < TUTORIAL_TEXTURE_COUNT; i++) {
-    LoadTextureFromFile(texFiles[i], &textures[i], VK_IMAGE_USAGE_SAMPLED_BIT,
-                        VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
+    LoadTextureFromFile(texFiles[i], &textures[i], VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
 
     const VkSamplerCreateInfo sampler = {
         .sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
