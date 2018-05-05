@@ -406,9 +406,7 @@ void DeleteBuffers(void) {
   vkDestroyBuffer(device.device_, buffers.vertexBuf_, nullptr);
 }
 
-enum ShaderType { VERTEX_SHADER, FRAGMENT_SHADER };
-VkResult loadShaderFromFile(const char* filePath, VkShaderModule* shaderOut,
-                            ShaderType type) {
+VkResult loadShaderFromFile(const char* filePath, VkShaderModule* shaderOut) {
   // Read the file
   assert(androidAppCtx);
   AAsset* file = AAssetManager_open(androidAppCtx->activity->assetManager,
@@ -459,8 +457,8 @@ VkResult CreateGraphicsPipeline(void) {
       .pDynamicStates = nullptr};
 
   VkShaderModule vertexShader, fragmentShader;
-  loadShaderFromFile("shaders/tri.vert.spv", &vertexShader, VERTEX_SHADER);
-  loadShaderFromFile("shaders/tri.frag.spv", &fragmentShader, FRAGMENT_SHADER);
+  loadShaderFromFile("shaders/tri.vert.spv", &vertexShader);
+  loadShaderFromFile("shaders/tri.frag.spv", &fragmentShader);
 
   // Specify vertex and fragment shader stages
   VkPipelineShaderStageCreateInfo shaderStages[2]{
